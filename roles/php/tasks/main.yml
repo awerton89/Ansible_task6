@@ -1,0 +1,27 @@
+---
+# tasks file for php
+- name: Update the apt package index in Ubuntu 20.04 server
+  become: yes
+  apt:
+    update_cache: yes
+    force_apt_get: yes
+
+- name: Install PHP7.2-fpm on Ubuntu 20.04 server
+  become: yes
+  package:
+    name: php-fpm
+    update_cache: yes
+    state: latest
+
+- name: config of php7.2-fpm, opening 9000 port  
+  become: yes
+  template:
+    src: /etc/ansible/roles/php/templates/php-conf.j2
+    dest: /etc/php/7.2/fpm/pool.d/www.conf
+
+- name: Restart php7.2-pfm
+  become: yes
+  ansible.builtin.systemd:
+    name: php7.2-fpm
+    state: restarted
+    enabled: yes

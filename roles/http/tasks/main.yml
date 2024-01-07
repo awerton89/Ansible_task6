@@ -1,0 +1,39 @@
+---
+# tasks file for http
+- name: Update the apt package index in Ubuntu 20.04 server
+  become: yes
+  apt:
+    update_cache: yes
+    force_apt_get: yes
+
+- name: Install NGINX web server on Ubuntu 20.04 server
+  become: yes
+  package:
+    name: nginx
+    update_cache: yes
+    state: latest
+
+- name: config of Nginx "sites-availiable"
+  become: yes
+  template:
+    src: /etc/ansible/roles/http/templates/nginx-conf.j2
+    dest: /etc/nginx/sites-available/default
+  notify:
+  - Restart nginx
+
+- name: This command will create DocumentRoot for site
+  ansible.builtin.shell:
+    cmd: mkdir -p /opt/nginx/ansible
+
+- name: add index.php file with <?php phpinfo();?> data to /opt/nginx/ansible/index.php
+  become: yes
+  template:
+    src: /etc/ansible/roles/http/templates/index.j2
+    dest: /opt/nginx/ansible/index.php
+
+- name: Nginx web server restart
+  become: yes
+  ansible.builtin.systemd:
+    name: nginx
+    state: restarted
+    enabled: yes
